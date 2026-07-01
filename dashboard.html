@@ -70,6 +70,8 @@ var DATA = [{"title": "EXTREME DIY ASMR CATCH THE BALL AND BALLOON WITH MARBLE G
 
 var T={"curiosity":"Curiosity","shock":"Shock","question":"Question","money":"Money","fear":"Fear","story":"Story","challenge":"Challenge","before_after":"BeforeAfter","fact":"Fact","myth":"Myth","controversy":"Controversy","listicle":"Listicle","how_to":"HowTo","mistake":"Mistake","secret":"Secret","hope":"Hope","humor":"Humor","surprise":"Surprise","inspiration":"Inspiration","anger":"Anger","sadness":"Sadness","love":"Love","greed":"Greed","nostalgia":"Nostalgia","urgency":"Urgency","fomo":"FOMO","awe":"Awe","relief":"Relief","subscribe":"Subscribe","follow":"Follow","like":"Like","comment":"Comment","share":"Share","save":"Save","link":"Link","bio":"Bio","dm":"DM","watch_next":"Next","buy":"Buy","download":"Download","signup":"Signup","website":"Website","shop":"Shop","none":"None","reveal":"Reveal","problem_solution":"Problem-Solution","journey":"Journey","tutorial":"Tutorial","reaction":"Reaction","day_in_life":"Vlog","expert_opinion":"Expert","list_ranking":"List","medium":"Med","high":"High","low":"Low","extreme":"X-High"};
 function tr(k){return T[k]||k;}
+var CN={"US":"United States","IN":"India","GB":"United Kingdom","CA":"Canada","AU":"Australia","JP":"Japan","KR":"South Korea","DE":"Germany","BR":"Brazil","ID":"Indonesia","FR":"France","ES":"Spain","IT":"Italy","NL":"Netherlands","SE":"Sweden","MX":"Mexico","TR":"Turkey","PK":"Pakistan","VN":"Vietnam","TH":"Thailand","TW":"Taiwan","HK":"Hong Kong","SG":"Singapore","PH":"Philippines","MY":"Malaysia","AE":"UAE","SA":"Saudi Arabia","BD":"Bangladesh","NG":"Nigeria","ZA":"South Africa","KE":"Kenya","EG":"Egypt","AR":"Argentina","CL":"Chile","CO":"Colombia","PE":"Peru","RU":"Russia","UA":"Ukraine","PL":"Poland","PT":"Portugal","FI":"Finland","NO":"Norway","DK":"Denmark","AT":"Austria","CH":"Switzerland","BE":"Belgium","IE":"Ireland","NZ":"New Zealand","":"Unknown"};
+function tr(k){return T[k]||k;}
 var C=['#e94560','#4ecca3','#ff6b35','#fbbf24','#a78bfa','#60a5fa','#f472b6','#34d399','#fb923c','#818cf8'];
 
 function fm(n){if(!n)return'0';if(n>=1e6)return(n/1e6).toFixed(1)+'M';if(n>=1e4)return(n/1e3).toFixed(1)+'K';if(n>=1e3)return(n/1e3).toFixed(0)+'K';return String(n);}
@@ -86,8 +88,9 @@ function buildStats(){
     DATA.forEach(function(v){
         tv+=v.view_count||0;tl+=v.like_count||0;
         if(v.hook_type)an++;
-        var cc=v.country_code||'(?)';
-        countries[cc]=(countries[cc]||0)+1;
+        var cc=v.country_code||'';
+        var cn=CN[cc]||cc||'Unknown';
+        countries[cn]=(countries[cn]||0)+1;
     });
     var topCC='';var topN=0;
     for(var k in countries){if(countries[k]>topN){topN=countries[k];topCC=k;}}
@@ -120,7 +123,7 @@ function makeChart(id,getter){
 }
 
 function buildCharts(){
-    var countries=makeChart('countryChart',function(v){return v.country_code||'(?)';});
+    var countries=makeChart('countryChart',function(v){var cc=v.country_code||''; return CN[cc]||cc||'Unknown';});
     var hooks=makeChart('hookChart',function(v){return v.hook_type||'';});
     var emotions=makeChart('emotionChart',function(v){return v.primary_emotion||'';});
     makeChart('ctaChart',function(v){return v.cta_type||'';});
@@ -144,7 +147,8 @@ function render(){
     var sf=document.getElementById('filterSearch').value.toLowerCase();
 
     var filtered=DATA.filter(function(v){
-        if(cf&&(v.country_code||'(?)')!==cf)return false;
+        var vcn=CN[v.country_code||'']||v.country_code||'Unknown';
+        if(cf&&vcn!==cf)return false;
         if(hf&&v.hook_type!==hf)return false;
         if(ef&&v.primary_emotion!==ef)return false;
         if(sf&&(v.title||'').toLowerCase().indexOf(sf)===-1)return false;
@@ -160,11 +164,12 @@ function render(){
     var h='';
     filtered.forEach(function(v,i){
         var cc=v.country_code||'?';
+        var cn=CN[cc]||cc;
         h+='<tr>';
         h+='<td style=color:#666>'+ (i+1) +'</td>';
         h+='<td><a href="'+(v.url||'#')+'" target=_blank>'+(v.title||'?').substring(0,60)+'</a><br><span style=font-size:10px;color:#666>'+(v.duration_sec||0)+'s</span></td>';
         h+='<td style=color:#aaa>'+(v.creator_name||'-')+'</td>';
-        h+='<td><span class="country-tag '+ctCls(cc)+'">'+cc+'</span></td>';
+        h+='<td><span class="country-tag '+ctCls(cc)+'">'+cn+'</span></td>';
         h+='<td class=views>'+fm(v.view_count)+'</td>';
         h+='<td><span class=badge>'+tr(v.hook_type)+'</span></td>';
         h+='<td>'+tr(v.primary_emotion)+'</td>';
